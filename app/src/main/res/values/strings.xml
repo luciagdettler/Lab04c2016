@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">Laboratorio04</string>
+    <string name="title_activity_main2">Reservalo.com</string>
+
+    <string name="navigation_drawer_open">Mostrar Opciones</string>
+    <string name="navigation_drawer_close">Ocultar Opciones</string>
+
+    <string name="action_settings">Configuracion</string>
+</resources>
