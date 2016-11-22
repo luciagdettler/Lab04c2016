@@ -18,6 +18,7 @@
         android:dialogTitle="Introduce tu email"
         android:selectAllOnFocus="true"
         android:singleLine="true"
+        
         android:defaultValue=""/>
 
     <RingtonePreference
