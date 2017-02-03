@@ -22,6 +22,5 @@
         android:layout_height="match_parent"
         android:id="@+id/ListView_ListaReserva"
         android:layout_alignParentTop="true"
-        android:layout_alignParentStart="true"
-        android:layout_above="@+id/Button_Reservar" />
+        android:layout_alignParentStart="true" />
 </RelativeLayout>

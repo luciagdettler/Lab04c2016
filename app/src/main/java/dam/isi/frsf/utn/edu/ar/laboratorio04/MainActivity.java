@@ -1,24 +1,22 @@
 package dam.isi.frsf.utn.edu.ar.laboratorio04;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.media.RingtoneManager;
+import android.net.Uri;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
-import android.support.v4.content.SharedPreferencesCompat;
-import android.support.v7.widget.SwitchCompat;
-import android.util.Log;
-import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -31,14 +29,10 @@ import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
 import dam.isi.frsf.utn.edu.ar.laboratorio04.modelo.Ciudad;
-import dam.isi.frsf.utn.edu.ar.laboratorio04.modelo.Departamento;
 import dam.isi.frsf.utn.edu.ar.laboratorio04.modelo.Reserva;
 import dam.isi.frsf.utn.edu.ar.laboratorio04.modelo.Usuario;
-import dam.isi.frsf.utn.edu.ar.laboratorio04.utils.BuscarDepartamentosTask;
-import dam.isi.frsf.utn.edu.ar.laboratorio04.utils.BusquedaFinalizadaListener;
 import dam.isi.frsf.utn.edu.ar.laboratorio04.utils.FormBusqueda;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
@@ -54,13 +48,20 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private Switch swFumadores;
     private FormBusqueda frmBusq;
     public static Usuario usuario;
+    private TextView textNombre;
+    private TextView textCorreo;
+    private TextView textView_Ringtone;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
         usuario = new Usuario("Android Studio","android.studio@android.com", RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION));
+
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
@@ -69,6 +70,15 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+
+        View headerLayout = navigationView.getHeaderView(0);
+
+        textNombre = (TextView) headerLayout.findViewById(R.id.textView_NombreUsuario);
+        textCorreo = (TextView) headerLayout.findViewById(R.id.textView_Correo);
+
+        textNombre.setText(usuario.getNombre());
+        textCorreo.setText(usuario.getCorreo());
+
 
         frmBusq= new FormBusqueda();
         txtHuespedes = (EditText) findViewById(R.id.cantHuespedes);
@@ -168,19 +178,59 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         int id = item.getItemId();
         Log.d("MainActivity","item seteado "+id+" y "+R.id.action_settings);
         //noinspection SimplifiableIfStatement
-        try{
+
         if (id == R.id.action_settings) {
-            startActivity( new Intent(this,Preferencias.class));
-            Log.d("MainActivity","nombre seteado");
-            SharedPreferences pref=PreferenceManager.getDefaultSharedPreferences(this);
-            Log.d("MainActivity","nombre seteado:"+pref.getString("opcNombre",""));
-            Log.d("MainActivity","email seteado:"+pref.getString("opcEmail",""));
+            LayoutInflater inflater = getLayoutInflater();
+            final View dialoglayout = inflater.inflate(R.layout.preferences, null);
+            final EditText editText_Usuario = (EditText) dialoglayout.findViewById(R.id.editText_Usuario);
+            final EditText editText_Correo = (EditText) dialoglayout.findViewById(R.id.editText_Correo);
+            textView_Ringtone = (TextView) dialoglayout.findViewById(R.id.textView_nombreRingtone);
+            textView_Ringtone.setText("");
+            final Button button_Ringtone = (Button) dialoglayout.findViewById(R.id.button_Ringtone);
+
+            button_Ringtone.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    final Uri currenturi = RingtoneManager.getActualDefaultRingtoneUri(MainActivity.this,RingtoneManager.TYPE_NOTIFICATION);
+                    Intent intent = new Intent(RingtoneManager.ACTION_RINGTONE_PICKER);
+                    intent.putExtra(RingtoneManager.EXTRA_RINGTONE_TITLE, "Select ringtone for notifications:");
+                    intent.putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_SILENT, false);
+                    intent.putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_DEFAULT, true);
+                    intent.putExtra(RingtoneManager.EXTRA_RINGTONE_TYPE,RingtoneManager.TYPE_ALARM);
+                    intent.putExtra(RingtoneManager.EXTRA_RINGTONE_EXISTING_URI, currenturi);
+                    startActivityForResult( intent, 999);
+                }
+            });
+
+            AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+            builder.setView(dialoglayout);
+
+            builder.setPositiveButton("Configurar", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    if(editText_Usuario.getText().toString().isEmpty())
+                        Toast.makeText(MainActivity.this, "Debe ingresar el nombre de usuario", Toast.LENGTH_SHORT).show();
+                    else if(editText_Correo.getText().toString().isEmpty())
+                        Toast.makeText(MainActivity.this, "Debe ingresar el correo", Toast.LENGTH_SHORT).show();
+                    else if(textView_Ringtone.getText().toString().isEmpty())
+                        Toast.makeText(MainActivity.this, "Debe seleccionar un ringtone", Toast.LENGTH_SHORT).show();
+                    else{
+                        usuario.setNombre(editText_Usuario.getText().toString());
+                        usuario.setCorreo(editText_Correo.getText().toString());
+                        //usuario.setRingstone(editText_Ringtone.getText().toString());
+
+                        textNombre.setText(usuario.getNombre());
+                        textCorreo.setText(usuario.getCorreo());
+                    }
+                }
+            });
+            builder.setNegativeButton("Cancelar",null);
+            builder.show();
+
             return true;
-        }}catch (Exception e){
-            Log.d("MainActivity","fallo");
-        return true;
-            }
-        return super.onOptionsItemSelected(item);
+        }
+
+            return super.onOptionsItemSelected(item);
     }
 
     @Override

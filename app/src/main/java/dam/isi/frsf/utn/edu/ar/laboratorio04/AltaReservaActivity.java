@@ -1,27 +1,23 @@
 package dam.isi.frsf.utn.edu.ar.laboratorio04;
 
 
-import android.app.AlarmManager;
-import android.app.PendingIntent;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
+import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.Toast;
+
 import java.util.ArrayList;
-import java.util.Calendar;
 
 import dam.isi.frsf.utn.edu.ar.laboratorio04.modelo.Departamento;
 import dam.isi.frsf.utn.edu.ar.laboratorio04.modelo.Reserva;
 import dam.isi.frsf.utn.edu.ar.laboratorio04.utils.TestReceiver;
-import dam.isi.frsf.utn.edu.ar.laboratorio04.utils.Utils;
 
 public class AltaReservaActivity extends AppCompatActivity {
 
@@ -90,16 +86,14 @@ public class AltaReservaActivity extends AppCompatActivity {
                         Seleccionado.setConfirmada(true);
                         Departamento.buscarYConfirmarReserva(Seleccionado);
                         MainActivity.usuario.getReservas().add(Seleccionado);
+
                         Toast reserva = Toast.makeText(AltaReservaActivity.this,"La reserva está en pendiente: "+Seleccionado.getId()+"\n"+Seleccionado.getConfirmada()+"\n"+Seleccionado.getFechaInicio(),Toast.LENGTH_SHORT);
                         reserva.show();
 
-                        AlarmManager manager = (AlarmManager) AltaReservaActivity.this.getSystemService(Context.ALARM_SERVICE);
-                        Calendar cal = Utils.getTimeAfterInSecs(1);
-                        Intent        intent  = new Intent(AltaReservaActivity.this, TestReceiver.class);
-                        intent.putExtra("message","Single Shot Alarm");
-                        PendingIntent pIntent = PendingIntent.getBroadcast(AltaReservaActivity.this, 2, intent,  PendingIntent.FLAG_CANCEL_CURRENT);
+                        TestReceiver activarAlarma = new TestReceiver();
+                        activarAlarma.sendRepeatingAlarm(AltaReservaActivity.this);
 
-                        manager.setRepeating(AlarmManager.RTC,cal.getTimeInMillis(),(3*1000),pIntent);
+                        finish();
 
                     }
                 })
